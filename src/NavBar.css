@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  height: 6vh;
+  height: 5vh;
   color: white;
 }
 
@@ -53,4 +53,5 @@
 
 .select-container {
   margin-left: auto;
+  padding-right: 1rem;
 }
