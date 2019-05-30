@@ -12,7 +12,9 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import Button from '@material-ui/core/Button';
+import DraggableColorBox from './DraggableColorBox.js';
 import { ChromePicker } from 'react-color';
+import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
 
 const drawerWidth = 400;
 
@@ -57,6 +59,7 @@ const styles = theme => ({
   },
   content: {
     flexGrow: 1,
+    height: 'calc(100vh - 64px)',
     padding: theme.spacing.unit * 3,
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
@@ -74,18 +77,92 @@ const styles = theme => ({
 });
 
 class NewPaletteForm extends Component {
-  state = {
-    open: false
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false,
+      currentColor: 'teal',
+      colors: [],
+      newColorName: '',
+      newPaletteName: ''
+    };
+  }
+
+  componentDidMount() {
+    ValidatorForm.addValidationRule('isColorName', value =>
+      this.state.colors.every(({ name }) => {
+        return name.toLowerCase() !== value.toLowerCase();
+      })
+    );
+    ValidatorForm.addValidationRule('isColor', value =>
+      this.state.colors.every(({ color }) => {
+        return color.toLowerCase() !== this.state.currentColor.toLowerCase();
+      })
+    );
+    ValidatorForm.addValidationRule('isPaletteName', value =>
+      this.props.palettes.every(({ paletteName }) => {
+        console.log({ paletteName });
+        return paletteName.toLowerCase() !== value.toLowerCase();
+      })
+    );
+  }
 
   toggleDrawerOpen = () => {
     const { open } = this.state;
     this.setState({ open: !open ? true : false });
   };
 
+  updateCurrentColor = newColor => {
+    if (!newColor) {
+      console.warn('Missing paramter: newColor');
+      return;
+    }
+
+    this.setState({
+      ...this.state,
+      currentColor: newColor.hex
+    });
+  };
+
+  addNewColor = () => {
+    const newColor = {
+      color: this.state.currentColor,
+      name: this.state.newColorName
+    };
+    this.setState({
+      ...this.state,
+      colors: [...this.state.colors, newColor],
+      newColorName: ''
+    });
+  };
+
+  handleChange = e => {
+    if (!e) {
+      console.warn('Missing paramter: event');
+      return;
+    }
+
+    this.setState({
+      ...this.state,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  handleSubmit = () => {
+    let newName = this.state.newPaletteName;
+    console.log(newName.toLowerCase().replace(/ /g, '-'));
+    const newPalette = {
+      paletteName: newName,
+      id: newName.toLowerCase().replace(/ /g, '-'),
+      colors: this.state.colors
+    };
+    this.props.savePalette(newPalette);
+    this.props.history.push('/');
+  };
+
   render() {
     const { classes } = this.props;
-    const { open } = this.state;
+    const { open, currentColor, newColorName, newPaletteName } = this.state;
 
     return (
       <div className={classes.root}>
@@ -108,6 +185,22 @@ class NewPaletteForm extends Component {
             <Typography variant="h6" color="inherit" noWrap>
               Persistent drawer
             </Typography>
+            <ValidatorForm onSubmit={this.handleSubmit}>
+              <TextValidator
+                label="Palette Name"
+                value={newPaletteName}
+                name="newPaletteName"
+                onChange={this.handleChange}
+                validators={['required', 'isPaletteName']}
+                errorMessages={[
+                  'this field is required',
+                  'Palette name must be unique'
+                ]}
+              />
+              <Button type="submit" variant="contained" color="primary">
+                Save Palette
+              </Button>
+            </ValidatorForm>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -135,12 +228,30 @@ class NewPaletteForm extends Component {
             </Button>
           </div>
           <ChromePicker
-            color="purple"
-            onChangeComplete={newColor => console.log(newColor)}
+            color={this.state.currentColor}
+            onChangeComplete={newColor => this.updateCurrentColor(newColor)}
           />
-          <Button variant="contained" color="primary">
-            Add Color
-          </Button>
+          <ValidatorForm onSubmit={this.addNewColor}>
+            <TextValidator
+              value={newColorName}
+              name="newColorName"
+              onChange={this.handleChange}
+              validators={['required', 'isColorName', 'isColor']}
+              errorMessages={[
+                'this field is required',
+                'Color name must be unique',
+                'Color already used'
+              ]}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              style={{ backgroundColor: currentColor }}
+            >
+              Add Color
+            </Button>
+          </ValidatorForm>
         </Drawer>
         <main
           className={classNames(classes.content, {
@@ -148,6 +259,15 @@ class NewPaletteForm extends Component {
           })}
         >
           <div className={classes.drawerHeader} />
+          <u>
+            {this.state.colors.map((color, i) => (
+              <DraggableColorBox
+                key={`${color}${i}`}
+                color={color.color}
+                name={color.name}
+              />
+            ))}
+          </u>
         </main>
       </div>
     );
@@ -156,7 +276,10 @@ class NewPaletteForm extends Component {
 
 NewPaletteForm.propTypes = {
   classes: PropTypes.object.isRequired,
-  theme: PropTypes.object.isRequired
+  theme: PropTypes.object.isRequired,
+  savePalette: PropTypes.func.isRequired,
+  history: PropTypes.object.isRequired,
+  palettes: PropTypes.array.isRequired
 };
 
 export default withStyles(styles, { withTheme: true })(NewPaletteForm);

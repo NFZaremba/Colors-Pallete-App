@@ -16,12 +16,20 @@ class Palette extends Component {
   }
 
   changeLevel = level => {
+    if (!level) {
+      console.warn('Missing paramter: level');
+      return;
+    }
     this.setState({
       level
     });
   };
 
   changeFormat = value => {
+    if (!value) {
+      console.warn('Missing paramter: value');
+      return;
+    }
     this.setState({
       format: value
     });

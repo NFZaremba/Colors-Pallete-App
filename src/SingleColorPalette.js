@@ -17,6 +17,10 @@ class SingleColorPalette extends Component {
   }
 
   gatherShades = (palette, colorToFilterBy) => {
+    if (!palette || !colorToFilterBy) {
+      console.warn('Missing paramter: palette, colorToFilterBy');
+      return;
+    }
     let shades = [];
     let allColors = palette.colors;
 
@@ -30,6 +34,10 @@ class SingleColorPalette extends Component {
   };
 
   changeFormat = value => {
+    if (!value) {
+      console.warn('Missing paramter: value');
+      return;
+    }
     this.setState({
       format: value
     });

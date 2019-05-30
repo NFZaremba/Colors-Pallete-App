@@ -21,6 +21,11 @@ class NavBar extends Component {
     };
   }
   handleFormatChange = e => {
+    if (!e) {
+      console.warn('Missing paramter: event');
+      return;
+    }
+
     let value = e.target.value;
     this.setState({
       ...this.state,

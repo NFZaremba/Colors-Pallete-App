@@ -7,6 +7,11 @@ import { styles } from './styles/PaletteListStyles';
 
 class PaletteList extends Component {
   goToPalette = id => {
+    if (!id) {
+      console.warn('Missing paramter: id');
+      return;
+    }
+
     this.props.history.push(`/palette/${id}`);
   };
   render() {
