@@ -78,7 +78,7 @@ ColorBox.propTypes = {
   id: PropTypes.string.isRequired,
   paletteId: PropTypes.string.isRequired,
   showingFullPalette: PropTypes.bool.isRequired,
-  classes: PropTypes.func.isRequired
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(ColorBox);

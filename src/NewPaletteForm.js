@@ -2,14 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
+import PaletteFormNav from './PaletteFormNav';
 import Drawer from '@material-ui/core/Drawer';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import Button from '@material-ui/core/Button';
 import DraggableColorList from './DraggableColorList';
@@ -81,11 +78,10 @@ class NewPaletteForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false,
+      open: true,
       currentColor: 'teal',
-      colors: [],
-      newColorName: '',
-      newPaletteName: ''
+      colors: this.props.palettes[0].colors,
+      newColorName: ''
     };
   }
 
@@ -98,12 +94,6 @@ class NewPaletteForm extends Component {
     ValidatorForm.addValidationRule('isColor', value =>
       this.state.colors.every(({ color }) => {
         return color.toLowerCase() !== this.state.currentColor.toLowerCase();
-      })
-    );
-    ValidatorForm.addValidationRule('isPaletteName', value =>
-      this.props.palettes.every(({ paletteName }) => {
-        console.log({ paletteName });
-        return paletteName.toLowerCase() !== value.toLowerCase();
       })
     );
   }
@@ -150,8 +140,13 @@ class NewPaletteForm extends Component {
     });
   };
 
-  handleSubmit = () => {
-    let newName = this.state.newPaletteName;
+  handleSubmit = newPaletteName => {
+    if (!newPaletteName) {
+      console.warn('Missing paramter: newPaletteName');
+      return;
+    }
+
+    let newName = newPaletteName;
     const newPalette = {
       paletteName: newName,
       id: newName.toLowerCase().replace(/ /g, '-'),
@@ -184,55 +179,39 @@ class NewPaletteForm extends Component {
     });
   };
 
-  render() {
-    const { classes } = this.props;
-    const {
-      open,
-      currentColor,
-      newColorName,
-      newPaletteName,
-      colors
-    } = this.state;
+  clearColors = () => {
+    this.setState({
+      ...this.state,
+      colors: []
+    });
+  };
 
+  addRandomColor = () => {
+    // pick random color from existing palettes
+    const allColors = this.props.palettes.map(p => p.colors).flat();
+    let rand = Math.floor(Math.random() * allColors.length);
+    const randomColor = allColors[rand];
+    this.setState({
+      ...this.state,
+      colors: [...this.state.colors, randomColor]
+    });
+    console.log(allColors);
+  };
+
+  render() {
+    const { classes, maxColor, palettes } = this.props;
+    const { open, currentColor, newColorName, colors } = this.state;
+
+    const paletteFull = colors.length >= maxColor;
     return (
       <div className={classes.root}>
-        <CssBaseline />
-        <AppBar
-          position="fixed"
-          className={classNames(classes.appBar, {
-            [classes.appBarShift]: open
-          })}
-        >
-          <Toolbar disableGutters={!open}>
-            <IconButton
-              color="inherit"
-              aria-label="Open drawer"
-              onClick={this.toggleDrawerOpen}
-              className={classNames(classes.menuButton, open && classes.hide)}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" color="inherit" noWrap>
-              Persistent drawer
-            </Typography>
-            <ValidatorForm onSubmit={this.handleSubmit}>
-              <TextValidator
-                label="Palette Name"
-                value={newPaletteName}
-                name="newPaletteName"
-                onChange={this.handleChange}
-                validators={['required', 'isPaletteName']}
-                errorMessages={[
-                  'this field is required',
-                  'Palette name must be unique'
-                ]}
-              />
-              <Button type="submit" variant="contained" color="primary">
-                Save Palette
-              </Button>
-            </ValidatorForm>
-          </Toolbar>
-        </AppBar>
+        <PaletteFormNav
+          classes={classes}
+          open={open}
+          palettes={palettes}
+          handleSubmit={this.handleSubmit}
+          toggleDrawerOpen={this.toggleDrawerOpen}
+        />
         <Drawer
           className={classes.drawer}
           variant="persistent"
@@ -250,10 +229,19 @@ class NewPaletteForm extends Component {
           <Divider />
           <Typography variant="h4">Design Your Palette</Typography>
           <div>
-            <Button variant="contained" color="secondary">
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={this.clearColors}
+            >
               Clear Palette
             </Button>
-            <Button variant="contained" color="primary">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={this.addRandomColor}
+              disabled={paletteFull}
+            >
               Random Color
             </Button>
           </div>
@@ -277,9 +265,10 @@ class NewPaletteForm extends Component {
               type="submit"
               variant="contained"
               color="primary"
-              style={{ backgroundColor: currentColor }}
+              style={{ backgroundColor: paletteFull ? 'grey' : currentColor }}
+              disabled={paletteFull}
             >
-              Add Color
+              {paletteFull ? 'Palette Full' : 'Add Color'}
             </Button>
           </ValidatorForm>
         </Drawer>
@@ -306,7 +295,12 @@ NewPaletteForm.propTypes = {
   theme: PropTypes.object.isRequired,
   savePalette: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
-  palettes: PropTypes.array.isRequired
+  palettes: PropTypes.array.isRequired,
+  maxColor: PropTypes.number.isRequired
+};
+
+NewPaletteForm.defaultProps = {
+  maxColor: 20
 };
 
 export default withStyles(styles, { withTheme: true })(NewPaletteForm);
