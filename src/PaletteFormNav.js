@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import PaletteMetaForm from './PaletteMetaForm';
 import classNames from 'classnames';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
@@ -9,23 +10,16 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Button from '@material-ui/core/Button';
-import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
+import { withStyles } from '@material-ui/core/styles';
+
+import styles from './styles/PaletteFormNavStyles';
 
 class PaletteFormNav extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      newPaletteName: ''
+      showForm: false
     };
-  }
-
-  componentDidMount() {
-    ValidatorForm.addValidationRule('isPaletteName', value =>
-      this.props.palettes.every(({ paletteName }) => {
-        console.log({ paletteName });
-        return paletteName.toLowerCase() !== value.toLowerCase();
-      })
-    );
   }
 
   handleChange = e => {
@@ -40,11 +34,31 @@ class PaletteFormNav extends Component {
     });
   };
 
+  showForm = () => {
+    this.setState({
+      ...this.state,
+      showForm: true
+    });
+  };
+
+  hideForm = () => {
+    this.setState({
+      ...this.state,
+      showForm: false
+    });
+  };
+
   render() {
-    const { classes, open, handleSubmit, toggleDrawerOpen } = this.props;
-    const { newPaletteName } = this.state;
+    const {
+      classes,
+      open,
+      handleSubmit,
+      toggleDrawerOpen,
+      palettes
+    } = this.props;
+    const { showForm } = this.state;
     return (
-      <div>
+      <div className={classes.root}>
         <CssBaseline />
         <AppBar
           position="fixed"
@@ -62,31 +76,36 @@ class PaletteFormNav extends Component {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" color="inherit" noWrap>
-              Persistent drawer
+              Create A Palette
             </Typography>
-            <ValidatorForm onSubmit={() => handleSubmit(newPaletteName)}>
-              <TextValidator
-                label="Palette Name"
-                value={newPaletteName}
-                name="newPaletteName"
-                onChange={this.handleChange}
-                validators={['required', 'isPaletteName']}
-                errorMessages={[
-                  'this field is required',
-                  'Palette name must be unique'
-                ]}
-              />
-              <Button type="submit" variant="contained" color="primary">
-                Save Palette
-              </Button>
-              <Link to="/">
-                <Button variant="contained" color="secondary">
-                  Go Back
-                </Button>
-              </Link>
-            </ValidatorForm>
           </Toolbar>
+          <div className={classes.navBtns}>
+            <Link to="/">
+              <Button
+                variant="contained"
+                color="secondary"
+                className={classes.button}
+              >
+                Go Back
+              </Button>
+            </Link>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={this.showForm}
+              className={classes.button}
+            >
+              Save
+            </Button>
+          </div>
         </AppBar>
+        {showForm && (
+          <PaletteMetaForm
+            palettes={palettes}
+            handleSubmit={handleSubmit}
+            hideForm={this.hideForm}
+          />
+        )}
       </div>
     );
   }
@@ -100,4 +119,4 @@ PaletteFormNav.propTypes = {
   toggleDrawerOpen: PropTypes.func.isRequired
 };
 
-export default PaletteFormNav;
+export default withStyles(styles, { withTheme: true })(PaletteFormNav);

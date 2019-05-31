@@ -6,6 +6,7 @@ import SingleColorPalette from './SingleColorPalette.js';
 import seedColors from './seedColors';
 import NewPaletteForm from './NewPaletteForm.js';
 import { generatePalette } from './colorHelpers';
+require('dotenv').config();
 
 class App extends Component {
   constructor(props) {
