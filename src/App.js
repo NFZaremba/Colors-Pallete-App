@@ -11,10 +11,12 @@ require('dotenv').config();
 class App extends Component {
   constructor(props) {
     super(props);
+    const savedPalettes = JSON.parse(window.localStorage.getItem('palettes'));
     this.state = {
-      palettes: seedColors
+      palettes: savedPalettes
     };
     console.log(this.state.palettes);
+    console.log(process.env);
   }
   findPalette = id => {
     if (!id) {
