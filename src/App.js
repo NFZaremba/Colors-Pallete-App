@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Route, Switch } from 'react-router-dom';
 import Palette from './Palette.js';
 import PaletteList from './PaletteList.js';
@@ -9,11 +10,14 @@ import { generatePalette } from './colorHelpers';
 require('dotenv').config();
 
 class App extends Component {
+  static defaultProps = {
+    initStorage: JSON.parse(localStorage.getItem('palettes'))
+  };
+
   constructor(props) {
     super(props);
-    const savedPalettes = JSON.parse(window.localStorage.getItem('palettes'));
     this.state = {
-      palettes: savedPalettes
+      palettes: this.props.initStorage || seedColors
     };
     console.log(this.state.palettes);
     console.log(process.env);
@@ -28,16 +32,46 @@ class App extends Component {
     });
   };
 
+  deletePalette = id => {
+    if (!id) {
+      console.warn('Missing paramter: id');
+      return;
+    }
+
+    this.setState(
+      prevState => ({
+        palettes: prevState.palettes.filter(palette => palette.id !== id)
+      }),
+      this.syncLocalStorage
+    );
+  };
+
   savePalette = newPalette => {
     if (!newPalette) {
       console.warn('Missing parameter: id');
     }
 
-    this.setState({
-      ...this.state,
-      palettes: [...this.state.palettes, newPalette]
-    });
+    this.setState(
+      {
+        ...this.state,
+        palettes: [...this.state.palettes, newPalette]
+      },
+      this.syncLocalStorage
+    );
   };
+
+  syncLocalStorage = () => {
+    if (!localStorage) {
+      console.warn('Browser does not support local storage');
+      return;
+    }
+
+    window.localStorage.setItem(
+      'palettes',
+      JSON.stringify(this.state.palettes)
+    );
+  };
+
   render() {
     return (
       <Switch>
@@ -56,7 +90,11 @@ class App extends Component {
           exact
           path="/"
           render={routeProps => (
-            <PaletteList palettes={this.state.palettes} {...routeProps} />
+            <PaletteList
+              palettes={this.state.palettes}
+              {...routeProps}
+              deletePalette={this.deletePalette}
+            />
           )}
         />
         <Route
@@ -86,5 +124,9 @@ class App extends Component {
     );
   }
 }
+
+App.propTypes = {
+  initStorage: PropTypes.array.isRequired
+};
 
 export default App;
