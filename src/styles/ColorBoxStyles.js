@@ -12,6 +12,12 @@ export const styles = {
     '&:hover button': {
       opacity: '1',
       transition: '0.5s'
+    },
+    '@media (max-width: 900px)': {
+      width: '50%'
+    },
+    '@media (max-width: 500px)': {
+      width: '100%'
     }
   },
   copyText: {
