@@ -23,6 +23,7 @@ class MiniPalette extends Component {
         key={color.name}
       />
     ));
+
     return (
       <div className={classes.root} onClick={handleClick}>
         <div className={classes.delete}>
