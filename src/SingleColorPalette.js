@@ -71,7 +71,7 @@ class SingleColorPalette extends Component {
 }
 
 SingleColorPalette.propTypes = {
-  palette: PropTypes.array.isRequired,
+  palette: PropTypes.object.isRequired,
   colorId: PropTypes.string.isRequired,
   classes: PropTypes.object.isRequired
 };

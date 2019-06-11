@@ -98,8 +98,8 @@ class NavBar extends Component {
 
 NavBar.propTypes = {
   handleChange: PropTypes.func.isRequired,
-  level: PropTypes.number.isRequired,
-  changeLevel: PropTypes.func.isRequired,
+  level: PropTypes.number,
+  changeLevel: PropTypes.func,
   showingAllColors: PropTypes.bool.isRequired,
   classes: PropTypes.object.isRequired
 };

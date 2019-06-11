@@ -75,8 +75,8 @@ class ColorBox extends Component {
 ColorBox.propTypes = {
   name: PropTypes.string.isRequired,
   background: PropTypes.string.isRequired,
-  id: PropTypes.string.isRequired,
-  paletteId: PropTypes.string.isRequired,
+  id: PropTypes.string,
+  paletteId: PropTypes.string,
   showingFullPalette: PropTypes.bool.isRequired,
   classes: PropTypes.object.isRequired
 };
